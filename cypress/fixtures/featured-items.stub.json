@@ -1,0 +1,30 @@
+{
+  "items": [
+    {
+      "id": "stubbed-floor-lamp",
+      "name": "Stubbed Floor Lamp",
+      "category": "Lighting",
+      "accent": "Fixture-backed response for Cypress intercept demos.",
+      "price": 88,
+      "displayPrice": "$88.00",
+      "section": "featured",
+      "inStock": true
+    },
+    {
+      "id": "stubbed-coffee-scale",
+      "name": "Stubbed Coffee Scale",
+      "category": "Kitchen",
+      "accent": "Secondary item to prove the whole list was replaced.",
+      "price": 42,
+      "displayPrice": "$42.00",
+      "section": "featured",
+      "inStock": false
+    }
+  ],
+  "meta": {
+    "section": "featured",
+    "limit": 3,
+    "locale": "en-US",
+    "totalMatches": 2
+  }
+}
