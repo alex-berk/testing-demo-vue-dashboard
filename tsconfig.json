@@ -12,5 +12,10 @@
     "resolveJsonModule": true,
     "types": ["cypress", "node", "vite/client", "vitest/globals"]
   },
-  "include": ["cypress/**/*.ts", "src/**/*.test.ts", "src/**/*.d.ts"]
+  "include": [
+    "cypress.config.ts",
+    "cypress/**/*.ts",
+    "src/**/*.test.ts",
+    "src/**/*.d.ts"
+  ]
 }

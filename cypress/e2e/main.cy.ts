@@ -1,26 +1,9 @@
-/// <reference types="cypress" />
-
-type ItemsInterception = {
-  request: {
-    query: Record<string, string | number>;
-  };
-  response?: {
-    statusCode: number;
-    body: {
-      items: unknown[];
-    };
-  };
-};
-
-const getItemsInterception = (alias: string) =>
-  cy.get(alias) as unknown as Cypress.Chainable<ItemsInterception>;
-
 describe('main demo page', () => {
   it('shows the main title and subtitle', () => {
     cy.visit('/');
 
     cy.get('[data-cy="page-title"]').should('have.text', 'Demo Catalog');
-    cy.get('[data-cy="page-subtitle"]').should(
+    cy.getByCy('page-subtitle').should(
       'contain',
       'single-page app that fetches a tiny catalog',
     );
@@ -30,9 +13,8 @@ describe('main demo page', () => {
     cy.intercept('GET', '**/api/items*').as('get-items');
 
     cy.visit('/');
-    cy.wait('@get-items'); // checks if it was called at all
 
-    getItemsInterception('@get-items').should((interception) => {
+    cy.wait('@get-items').then((interception) => {
       expect(interception.request.query).to.deep.include({
         section: 'featured',
         limit: '3',
@@ -51,9 +33,8 @@ describe('main demo page', () => {
     }).as('get-items-stub');
 
     cy.visit('/');
-    cy.wait('@get-items-stub');
 
-    getItemsInterception('@get-items-stub').should((interception) => {
+    cy.wait('@get-items-stub').then((interception) => {
       expect(interception.request.query).to.deep.include({
         section: 'featured',
         limit: '3',

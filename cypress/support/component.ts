@@ -1,3 +1,4 @@
+import './commands';
 import { mount } from 'cypress/vue';
 import '../../src/styles.css';
 
