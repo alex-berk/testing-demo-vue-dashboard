@@ -152,6 +152,30 @@ code {
   color: #ac2f2f;
 }
 
+.panel--shifted {
+  transform: translateY(-3px);
+}
+
+.card-grid-shell {
+  position: relative;
+  width: 100%;
+}
+
+.card-grid-shell--cropped {
+  overflow: hidden;
+}
+
+.card-grid-shell--cropped::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 92px;
+  background: rgba(255, 255, 255, 0.92);
+  pointer-events: none;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -230,4 +254,3 @@ code {
     align-items: flex-start;
   }
 }
-

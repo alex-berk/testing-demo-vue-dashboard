@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import AppHeader from './components/AppHeader.vue';
 import ItemCard from './components/ItemCard.vue';
 import {
@@ -12,6 +12,37 @@ const items = ref([]);
 const meta = ref(defaultCatalogQuery);
 const status = ref('loading');
 const error = ref('');
+const currentPath = ref(
+  typeof window === 'undefined' ? '/' : window.location.pathname,
+);
+
+function syncCurrentPath() {
+  currentPath.value = window.location.pathname;
+}
+
+const pageVariant = computed(() => {
+  if (currentPath.value === '/baseline') {
+    return 'baseline';
+  }
+
+  if (currentPath.value === '/shift') {
+    return 'shift';
+  }
+
+  if (currentPath.value === '/crop') {
+    return 'crop';
+  }
+
+  return 'default';
+});
+
+const showRequestProfile = computed(() => pageVariant.value === 'default');
+const featuredPanelClasses = computed(() => ({
+  'panel--shifted': pageVariant.value === 'shift',
+}));
+const cardGridShellClasses = computed(() => ({
+  'card-grid-shell--cropped': pageVariant.value === 'crop',
+}));
 
 async function loadItems() {
   status.value = 'loading';
@@ -32,7 +63,13 @@ async function loadItems() {
 }
 
 onMounted(() => {
+  syncCurrentPath();
   loadItems();
+  window.addEventListener('popstate', syncCurrentPath);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('popstate', syncCurrentPath);
 });
 </script>
 
@@ -41,7 +78,11 @@ onMounted(() => {
     <AppHeader />
 
     <main class="content-grid">
-      <section class="panel panel--info" aria-labelledby="request-profile-title">
+      <section
+        v-if="showRequestProfile"
+        class="panel panel--info"
+        aria-labelledby="request-profile-title"
+      >
         <div class="panel__heading">
           <p class="panel__eyebrow">Request profile</p>
           <h2 id="request-profile-title">This page loads a small API payload on mount.</h2>
@@ -56,7 +97,12 @@ onMounted(() => {
         </p>
       </section>
 
-      <section class="panel" aria-labelledby="featured-items-title">
+      <section
+        class="panel"
+        :class="featuredPanelClasses"
+        aria-labelledby="featured-items-title"
+        data-cy="featured-items-panel"
+      >
         <div class="panel__heading panel__heading--row">
           <div>
             <p class="panel__eyebrow">Featured items</p>
@@ -75,9 +121,16 @@ onMounted(() => {
           {{ error }}
         </p>
 
-        <ul v-else class="card-grid" aria-label="Featured demo items">
-          <ItemCard v-for="item in items" :key="item.id" :item="item" />
-        </ul>
+        <div
+          v-else
+          class="card-grid-shell"
+          :class="cardGridShellClasses"
+          data-cy="card-grid-shell"
+        >
+          <ul class="card-grid" aria-label="Featured demo items">
+            <ItemCard v-for="item in items" :key="item.id" :item="item" />
+          </ul>
+        </div>
       </section>
     </main>
   </div>
