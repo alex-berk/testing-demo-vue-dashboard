@@ -5,9 +5,85 @@ describe('eval pages rendering', () => {
     cy.visit('/baseline');
     cy.wait('@get-items');
 
-    cy.contains('Request profile').should('not.exist');
+    cy.getByCy('request-summary').should('not.exist');
     cy.getByCy('featured-items-panel').should('be.visible');
-    cy.contains('QA Field Notes').should('be.visible');
+    cy.getByCy('item-qa-field-notes').should('be.visible');
+    cy.getByCy('item-vitest-mug').should('be.visible');
+    cy.getByCy('item-vitest-mug').find('.item-card__section').should('be.visible');
+
+    cy.getByCy('card-grid-shell').then(($shell) => {
+      const shellRect = $shell[0].getBoundingClientRect();
+      const cropMaskWidth =
+        Number.parseFloat(window.getComputedStyle($shell[0], '::after').width) || 0;
+      const visibleRightEdge = shellRect.right - cropMaskWidth;
+
+      cy.getByCy('item-vitest-mug')
+        .find('.item-card__section')
+        .should(($section) => {
+          const sectionRect = $section[0].getBoundingClientRect();
+
+          expect(
+            sectionRect.right,
+            'badge should stay inside the unobscured portion of the shell',
+          ).to.be.at.most(visibleRightEdge);
+        });
+    });
+  });
+
+  it('renders the crop page with the last card clipped by the grid shell', () => {
+    cy.intercept('GET', '**/api/items*').as('get-items');
+
+    cy.visit('/crop');
+    cy.wait('@get-items');
+
+    cy.getByCy('item-qa-field-notes').should('be.visible');
+    cy.getByCy('item-vitest-mug').find('.item-card__section').should('be.visible');
+
+    cy.getByCy('card-grid-shell').then(($shell) => {
+      const shellRect = $shell[0].getBoundingClientRect();
+      const cropMaskWidth =
+        Number.parseFloat(window.getComputedStyle($shell[0], '::after').width) || 0;
+      const visibleRightEdge = shellRect.right - cropMaskWidth;
+
+      cy.getByCy('item-vitest-mug')
+        .find('.item-card__section')
+        .should(($section) => {
+          const sectionRect = $section[0].getBoundingClientRect();
+
+          expect(
+            sectionRect.right,
+            'badge should extend into the obscured portion of the shell',
+          ).to.be.greaterThan(visibleRightEdge);
+        });
+    });
+  });
+
+  it('keeps the crop page layout identical to baseline except for the visual mask', () => {
+    cy.intercept('GET', '**/api/items*').as('get-items');
+
+    let baselineCardWidth = 0;
+
+    cy.visit('/baseline');
+    cy.wait('@get-items');
+    cy.getByCy('item-vitest-mug').then(($card) => {
+      baselineCardWidth = $card[0].getBoundingClientRect().width;
+    });
+
+    cy.visit('/crop');
+    cy.wait('@get-items');
+
+    cy.getByCy('card-grid-shell').then(($shell) => {
+      const cropMaskStyles = window.getComputedStyle($shell[0], '::after');
+
+      expect(cropMaskStyles.width).to.eq('92px');
+
+      cy.getByCy('item-vitest-mug').then(($card) => {
+        expect($card[0].getBoundingClientRect().width).to.be.closeTo(
+          baselineCardWidth,
+          0.5,
+        );
+      });
+    });
   });
 
   it('renders the shift page 3 pixels higher than baseline', () => {
@@ -29,33 +105,4 @@ describe('eval pages rendering', () => {
       expect($panel[0].getBoundingClientRect().top).to.be.closeTo(baselineTop - 3, 0.5);
     });
   });
-
-  it('renders the crop page with the last card clipped by the grid shell', () => {
-    cy.intercept('GET', '**/api/items*').as('get-items');
-
-    let baselineCardWidth = 0;
-
-    cy.visit('/baseline');
-    cy.wait('@get-items');
-    cy.get('[data-cy="item-vitest-mug"]').then(($card) => {
-      baselineCardWidth = $card[0].getBoundingClientRect().width;
-    });
-
-    cy.visit('/crop');
-    cy.wait('@get-items');
-
-    cy.contains('Request profile').should('not.exist');
-    cy.getByCy('card-grid-shell').then(($shell) => {
-      const cropMaskStyles = window.getComputedStyle($shell[0], '::after');
-
-      expect(cropMaskStyles.width).to.eq('92px');
-
-      cy.get('[data-cy="item-vitest-mug"]').then(($card) => {
-        expect($card[0].getBoundingClientRect().width).to.be.closeTo(
-          baselineCardWidth,
-          0.5,
-        );
-      });
-    });
-  });
-})
+});
