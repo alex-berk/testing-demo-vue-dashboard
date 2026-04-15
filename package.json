@@ -13,7 +13,7 @@
     "test:unit:watch": "vitest",
     "test:e2e": "cypress run --e2e",
     "test:component": "cypress run --component",
-    "test:smoke": "cypress run --spec='cypress/e2e/visualEval.smoke.cy.ts'",
+    "test:visual:smoke": "cypress run --spec='cypress/e2e/visualEval.smoke.cy.ts'",
     "cy:open": "cypress open",
     "cy:generate-base": "cypress run -x GENERATE_BASELINE=TRUE"
   },
